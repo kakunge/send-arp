@@ -89,19 +89,24 @@ int main(int argc, char* argv[]) {
 	}
 
 	Mac senderMac;
-	uint8_t myMac[MAC_LEN] = {0};
+	uint8_t myMac[MAC_LEN];
 	uint32_t myIp;
 
 	// Get My Mac, Ip
 	getMacAddress(myMac, dev);
 	getIpAddress(myIp, dev);
 
-	for (int rep = 1; rep < 3; rep++) {
-		char* senderIp = argv[rep*2];
-		char* targetIp = argv[rep*2+1];
+	EthArpPacket packet;
+	EthArpPacket arpreply;
 
+	const u_char* rpacket;
+	struct pcap_pkthdr* header;
 
-		EthArpPacket packet;
+	int res;
+
+	for (int rep = 1; rep < argc; rep += 2) {
+		char* senderIp = argv[rep + 1];
+		char* targetIp = argv[rep + 2];
 
 		// Get Sender Mac
 		packet.eth_.dmac_ = Mac("FF:FF:FF:FF:FF:FF");
@@ -118,14 +123,11 @@ int main(int argc, char* argv[]) {
 		packet.arp_.tmac_ = Mac("00:00:00:00:00:00");
 		packet.arp_.tip_ = htonl(Ip(senderIp));
 
-		int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(EthArpPacket));
+		res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(EthArpPacket));
 		if (res != 0) {
 			fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
 		}
 
-		EthArpPacket arpreply;
-		const u_char* rpacket;
-		struct pcap_pkthdr* header;
 		res = pcap_next_ex(handle, &header, &rpacket);
 
 		arpreply = *(EthArpPacket*)rpacket;
