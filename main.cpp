@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
 
 	int res;
 
-	for (int rep = 1; rep < argc; rep += 2) {
+	for (int rep = 1; rep < argc - 1; rep += 2) {
 		char* senderIp = argv[rep + 1];
 		char* targetIp = argv[rep + 2];
 
