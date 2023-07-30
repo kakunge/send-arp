@@ -136,8 +136,15 @@ int main(int argc, char* argv[]) {
 			fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
 		}
 
+
 		res = pcap_next_ex(handle, &header, &rpacket);
 		arpreply = *(EthArpPacket*)rpacket;
+
+		while (arpreply.eth_.type() != 0x0806) {
+			res = pcap_next_ex(handle, &header, &rpacket);
+			arpreply = *(EthArpPacket*)rpacket;
+		}
+
 		senderMac = arpreply.eth_.smac_;
 
 		// Attack
